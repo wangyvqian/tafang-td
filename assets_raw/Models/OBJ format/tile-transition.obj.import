@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://bm6jws8jbckck"
+path="res://.godot/imported/tile-transition.obj-cc5841e5c042733df916f6e5c2596f2d.mesh"
+
+[deps]
+
+files=["res://.godot/imported/tile-transition.obj-cc5841e5c042733df916f6e5c2596f2d.mesh"]
+
+source_file="res://assets_raw/Models/OBJ format/tile-transition.obj"
+dest_files=["res://.godot/imported/tile-transition.obj-cc5841e5c042733df916f6e5c2596f2d.mesh", "res://.godot/imported/tile-transition.obj-cc5841e5c042733df916f6e5c2596f2d.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

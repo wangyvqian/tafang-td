@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://c2ro1q4ee3qww"
+path="res://.godot/imported/weapon-turret.obj-420746abbf688ebc0bfabf33505c21cb.mesh"
+
+[deps]
+
+files=["res://.godot/imported/weapon-turret.obj-420746abbf688ebc0bfabf33505c21cb.mesh"]
+
+source_file="res://assets_raw/Models/OBJ format/weapon-turret.obj"
+dest_files=["res://.godot/imported/weapon-turret.obj-420746abbf688ebc0bfabf33505c21cb.mesh", "res://.godot/imported/weapon-turret.obj-420746abbf688ebc0bfabf33505c21cb.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

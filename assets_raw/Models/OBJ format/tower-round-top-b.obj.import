@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://b2snaff41sgl5"
+path="res://.godot/imported/tower-round-top-b.obj-9bd375e19a1b6fec03201f2bb8581aef.mesh"
+
+[deps]
+
+files=["res://.godot/imported/tower-round-top-b.obj-9bd375e19a1b6fec03201f2bb8581aef.mesh"]
+
+source_file="res://assets_raw/Models/OBJ format/tower-round-top-b.obj"
+dest_files=["res://.godot/imported/tower-round-top-b.obj-9bd375e19a1b6fec03201f2bb8581aef.mesh", "res://.godot/imported/tower-round-top-b.obj-9bd375e19a1b6fec03201f2bb8581aef.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false
