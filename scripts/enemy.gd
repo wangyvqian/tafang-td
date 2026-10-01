@@ -19,19 +19,44 @@ var hp_bar_root: Node3D
 var bar_fill: MeshInstance3D
 var anim_time: float = 0.0
 
+## 行走离地高度:贴合路面顶面(路基 0.14 + 车辙 0.015),避免车辆陷入路面
+const WALK_Y := 0.155
+
 
 func setup(cfg: Dictionary, wave: int, path: Array[Vector3]) -> void:
 	kind = cfg.kind
 	max_hp = float(cfg.hp) * pow(1.18, wave - 1)
 	hp = max_hp
-	speed = float(cfg.speed) * (1.0 + 0.02 * (wave - 1))
+	# 速度加 ±5% 随机,避免同速单位长时间重叠
+	speed = float(cfg.speed) * (1.0 + 0.02 * (wave - 1)) * randf_range(0.95, 1.05)
 	reward = int(cfg.reward)
-	waypoints = path
+	# 按兵种分配车道(士兵靠左、吉普靠右、坦克居中),再加少量抖动避免同类重叠
+	var lane := float(cfg.get("lane", 0.0)) + randf_range(-0.18, 0.18)
+	waypoints = build_lane_path(path, lane)
 	position = waypoints[0]
 	add_to_group("enemies")
 	build_visuals()
 	build_hp_bar()
 	update_bar()
+
+
+## 把中心线路径沿各段法线平移 lane 距离,得到该单位的行车线
+func build_lane_path(path: Array[Vector3], lane: float) -> Array[Vector3]:
+	var pts: Array[Vector3] = []
+	var n := path.size()
+	for i in n:
+		var dir := Vector3.ZERO
+		if i > 0:
+			dir += (path[i] - path[i - 1]).normalized()
+		if i < n - 1:
+			dir += (path[i + 1] - path[i]).normalized()
+		if dir.length_squared() < 0.0001:
+			dir = Vector3.FORWARD
+		dir = dir.normalized()
+		var perp := Vector3(-dir.z, 0.0, dir.x)
+		var p := path[i]
+		pts.append(Vector3(p.x + perp.x * lane, WALK_Y, p.z + perp.z * lane))
+	return pts
 
 
 func _process(delta: float) -> void:
@@ -96,16 +121,24 @@ func update_bar() -> void:
 
 # ---------- 外观:优先加载 GLB 模型,缺失时回退到程序化几何体 ----------
 
-## 每种敌人对应的模型文件(来源:Poly Pizza,CC0 授权)
+## 每种敌人对应的模型文件(来源:Poly Pizza / OpenGameArt,CC0/CC-BY 授权)
 const MODEL_FILES := {
-	"soldier": "res://assets/models/enemy_soldier.glb",
+	"soldier": "res://assets/models/enemy_swat.glb",
 	"jeep": "res://assets/models/enemy_jeep.glb",
-	"tank": "res://assets/models/enemy_tank.glb",
+	"tank": "res://assets/models/tank/recon_tank.fbx",
 }
 ## 模型最长边缩放到的目标尺寸(米)
-const MODEL_SIZE := {"soldier": 1.7, "jeep": 2.0, "tank": 3.0}
+const MODEL_SIZE := {"soldier": 1.8, "jeep": 2.9, "tank": 3.8}
 ## 若模型朝向不对(倒着走),把对应值改成 180
-const MODEL_YAW := {"soldier": 0.0, "jeep": 0.0, "tank": 0.0}
+const MODEL_YAW := {"soldier": 180.0, "jeep": 180.0, "tank": 180.0}
+## 需要统一涂装的模型(覆盖其原贴图颜色,融入沙漠战场)
+const MODEL_TINT := {
+	"jeep": Color(0.52, 0.47, 0.33),
+}
+## 带外置 PBR 贴图的模型:模型路径 -> 贴图目录
+const PBR_DIRS := {
+	"res://assets/models/tank/recon_tank.fbx": "res://assets/models/tank/",
+}
 
 
 func build_visuals() -> void:
@@ -117,44 +150,88 @@ func build_visuals() -> void:
 		visual.add_child(model)
 		model.rotation_degrees.y = float(MODEL_YAW.get(kind, 0.0))
 		fit_model(model, float(MODEL_SIZE.get(kind, 2.0)))
+		if PBR_DIRS.has(path):
+			apply_pbr(model, PBR_DIRS[path])
+		elif MODEL_TINT.has(kind):
+			apply_tint(model, MODEL_TINT[kind])
 		return
 	build_fallback_visuals()
 
 
-## 自动缩放模型到目标尺寸、旋转朝向 -Z、底部贴地
+## 把目录下的 BaseColor/Normal/Roughness/Metallic 贴图应用到模型所有网格
+func apply_pbr(n: Node, dir: String) -> void:
+	var albedo := _load_tex(dir + "BaseColor.png")
+	var normal := _load_tex(dir + "Normal.png")
+	var rough := _load_tex(dir + "Roughness.png")
+	var metal := _load_tex(dir + "Metallic.png")
+	if albedo == null:
+		return
+	for child in n.get_children():
+		if child is MeshInstance3D:
+			var m := StandardMaterial3D.new()
+			m.albedo_texture = albedo
+			if normal:
+				m.normal_enabled = true
+				m.normal_texture = normal
+			if rough:
+				m.roughness_texture = rough
+			if metal:
+				m.metallic_texture = metal
+			(child as MeshInstance3D).material_override = m
+		apply_pbr(child, dir)
+
+
+func _load_tex(path: String) -> Texture2D:
+	if ResourceLoader.exists(path):
+		return load(path) as Texture2D
+	return null
+
+
+## 给模型所有网格统一换色
+func apply_tint(n: Node, c: Color) -> void:
+	for child in n.get_children():
+		if child is MeshInstance3D:
+			var m := StandardMaterial3D.new()
+			m.albedo_color = c
+			m.roughness = 0.8
+			(child as MeshInstance3D).material_override = m
+		apply_tint(child, c)
+
+
+## 自动缩放模型到目标尺寸、把模型中心对齐到原点、底部贴地
 func fit_model(model: Node3D, target: float) -> void:
 	var a := node_aabb(model)
-	# 最长水平轴对齐到 Z(前进方向)
-	if a.size.x > a.size.z:
-		model.rotation_degrees.y += 90.0
-		a = node_aabb(model)
 	var longest := maxf(a.size.x, maxf(a.size.y, a.size.z))
 	if longest > 0.001:
 		model.scale = Vector3.ONE * (target / longest)
-	# 底部贴地
 	var a2 := node_aabb(model)
-	model.position.y -= a2.position.y - global_position.y
+	var center := a2.get_center()
+	model.position.x -= center.x
+	model.position.z -= center.z
+	model.position.y -= a2.position.y
 
 
-## 计算节点树的包围盒(需在场景树中)
-func node_aabb(n: Node3D) -> AABB:
-	var stack: Array[Node] = [n]
+## 计算节点树的包围盒,结果位于 root 父节点的局部坐标系(不依赖 global_transform)
+func node_aabb(root: Node3D) -> AABB:
+	var stack: Array = [[root, root.transform]]
 	var result := AABB()
 	var has := false
 	while not stack.is_empty():
-		var cur: Node = stack.pop_back()
-		if cur is MeshInstance3D:
-			var mi := cur as MeshInstance3D
+		var entry: Array = stack.pop_back()
+		var node: Node3D = entry[0]
+		var xf: Transform3D = entry[1]
+		if node is MeshInstance3D:
+			var mi := node as MeshInstance3D
 			if mi.mesh != null:
-				var a := mi.global_transform * mi.mesh.get_aabb()
+				var a: AABB = xf * mi.mesh.get_aabb()
 				if has:
 					result = result.merge(a)
 				else:
 					result = a
 					has = true
-		for c in cur.get_children():
+		for c in node.get_children():
 			if c is Node3D:
-				stack.append(c)
+				stack.append([c, xf * (c as Node3D).transform])
 	return result
 
 

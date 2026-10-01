@@ -94,20 +94,26 @@ func set_ghost_valid(ok: bool) -> void:
 
 # ---------- 外观:优先加载 GLB 模型,缺失时回退到程序化几何体 ----------
 
-## 每种塔对应的武器模型(来源:Kenney Tower Defense Kit,CC0 授权)
+## 每种塔对应的武器模型(来源:Poly Pizza 双管防空炮,CC0 授权)
 const MODEL_FILES := {
 	"mg": "res://assets/models/tower_mg.glb",
 	"cannon": "res://assets/models/tower_cannon.glb",
 	"missile": "res://assets/models/tower_missile.glb",
 }
 ## 模型最长边缩放到的目标尺寸(米)
-const MODEL_SIZE := {"mg": 1.8, "cannon": 2.2, "missile": 2.2}
-## 若炮口朝向不对(塔转 180° 开火),把对应值改成 180
+const MODEL_SIZE := {"mg": 1.9, "cannon": 2.9, "missile": 2.5}
+## 炮口朝向修正(该模型炮管指向 +Z,转 180° 后指向 -Z = 索敌方向)
 const MODEL_YAW := {"mg": 180.0, "cannon": 180.0, "missile": 180.0}
+## 各塔涂装色(覆盖模型贴图,形成军械配色)
+const MODEL_TINT := {
+	"mg": Color(0.25, 0.31, 0.22),
+	"cannon": Color(0.3, 0.3, 0.28),
+	"missile": Color(0.36, 0.33, 0.2),
+}
 
 
 func build_visuals() -> void:
-	var base := cyl(0.75, 0.85, 0.4, Color(0.18, 0.18, 0.18))
+	var base := cyl(0.75, 0.85, 0.4, Color(0.2, 0.21, 0.19))
 	base.position.y = 0.2
 	add_child(base)
 	body_meshes.append(base)
@@ -125,43 +131,58 @@ func build_visuals() -> void:
 		model.rotation_degrees.y = float(MODEL_YAW.get(type_key, 0.0))
 		var size := float(MODEL_SIZE.get(type_key, 2.0))
 		fit_model(model, size)
-		muzzle.position = Vector3(0, size * 0.35, -size * 0.62)
+		tint_model(model, MODEL_TINT.get(type_key, Color.WHITE))
+		muzzle.position = Vector3(0, size * 0.30, -size * 0.55)
 		return
 	build_fallback_visuals()
 
 
-## 自动缩放模型到目标尺寸、旋转朝向 -Z、底部贴合炮塔平台
+## 自动缩放模型到目标尺寸、把模型中心对齐到炮塔原点、底部贴合平台
 func fit_model(model: Node3D, target: float) -> void:
 	var a := node_aabb(model)
-	if a.size.x > a.size.z:
-		model.rotation_degrees.y += 90.0
-		a = node_aabb(model)
 	var longest := maxf(a.size.x, maxf(a.size.y, a.size.z))
 	if longest > 0.001:
 		model.scale = Vector3.ONE * (target / longest)
 	var a2 := node_aabb(model)
-	model.position.y -= a2.position.y - turret.global_position.y
+	var center := a2.get_center()
+	model.position.x -= center.x
+	model.position.z -= center.z
+	model.position.y -= a2.position.y
 
 
-## 计算节点树的包围盒(需在场景树中)
-func node_aabb(n: Node3D) -> AABB:
-	var stack: Array[Node] = [n]
+## 给模型内所有网格统一换色
+func tint_model(n: Node, c: Color) -> void:
+	for child in n.get_children():
+		if child is MeshInstance3D:
+			var m := StandardMaterial3D.new()
+			m.albedo_color = c
+			m.roughness = 0.72
+			m.metallic = 0.25
+			(child as MeshInstance3D).material_override = m
+		tint_model(child, c)
+
+
+## 计算节点树的包围盒,结果位于 root 父节点的局部坐标系(不依赖 global_transform)
+func node_aabb(root: Node3D) -> AABB:
+	var stack: Array = [[root, root.transform]]
 	var result := AABB()
 	var has := false
 	while not stack.is_empty():
-		var cur: Node = stack.pop_back()
-		if cur is MeshInstance3D:
-			var mi := cur as MeshInstance3D
+		var entry: Array = stack.pop_back()
+		var node: Node3D = entry[0]
+		var xf: Transform3D = entry[1]
+		if node is MeshInstance3D:
+			var mi := node as MeshInstance3D
 			if mi.mesh != null:
-				var a := mi.global_transform * mi.mesh.get_aabb()
+				var a: AABB = xf * mi.mesh.get_aabb()
 				if has:
 					result = result.merge(a)
 				else:
 					result = a
 					has = true
-		for c in cur.get_children():
+		for c in node.get_children():
 			if c is Node3D:
-				stack.append(c)
+				stack.append([c, xf * (c as Node3D).transform])
 	return result
 
 

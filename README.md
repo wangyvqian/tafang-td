@@ -47,43 +47,69 @@
 & "$env:USERPROFILE\Godot\Godot_v4.7.2-stable_win64.exe" --path "c:\Users\Administrator\Documents\code\tafang"
 ```
 
+## 素材来源与授权
+
+| 素材 | 内容 | 来源 | 授权 |
+|---|---|---|---|
+| 侦察坦克 `tank/recon_tank.fbx` + PBR 贴图 | 敌人「坦克」 | [OpenGameArt - Recon Tank](https://opengameart.org/content/recon-tank-update)(作者 Mophs / MNDV.ecb) | CC-BY 4.0 |
+| 士兵 `enemy_swat.glb` | 敌人「士兵」 | [Poly Pizza - SWAT](https://poly.pizza/m/Btfn3G5Xv4)(Quaternius) | CC0 |
+| 轻型坦克 `enemy_jeep.glb` | 敌人「吉普」 | [Poly Pizza - Light Tank](https://poly.pizza/m/S1jUTRmAjD)(Zsky) | CC0 |
+| 双管防空炮 `tower_*.glb` | 三种防御塔 | [Poly Pizza - Turret](https://poly.pizza/m/mXKbcMPLSS) | CC0 |
+| 沙袋/油桶/帐篷/松树/铁路网/补给箱/岗楼 | 战场装饰 | Poly Pizza(Quaternius 等) | CC0 |
+| 岩石/土堆/小树 | 地面细节 | [Kenney Tower Defense Kit](https://kenney.nl/assets/tower-defense-kit) | CC0 |
+| 沙漠地面/碎石路 PBR 贴图 | 地面与道路 | [ambientCG](https://ambientcg.com/)(Ground054 / Gravel022 / Ground080) | CC0 |
+| 天空 HDRI | 真实天空与光照 | [Poly Haven](https://polyhaven.com/)(kloofendal_48d_partly_cloudy_puresky) | CC0 |
+
+> 唯一需要署名的是 Recon Tank(CC-BY 4.0),署名信息在 `assets/models/tank/CREDITS.txt`。
+> 如果发布游戏,记得在说明中标注该模型作者。
+
 ## 项目结构
 
 ```
 tafang/
 ├── project.godot          # Godot 项目配置
 ├── scenes/main.tscn       # 主场景(仅一个根节点,其余全部由代码生成)
-├── assets/models/         # 已接入游戏的 3D 模型(全部 CC0 免版权)
-│   ├── enemy_soldier.glb  # 士兵(Poly Pizza / Quaternius)
-│   ├── enemy_jeep.glb     # 轻型装甲车(Poly Pizza / Zsky)
-│   ├── enemy_tank.glb     # 坦克(Poly Pizza / Quaternius)
-│   ├── enemy_swat.glb     # 备用:SWAT 士兵
-│   ├── tower_mg.glb       # 机枪塔武器(Kenney weapon-turret)
-│   ├── tower_cannon.glb   # 加农炮武器(Kenney weapon-cannon)
-│   └── tower_missile.glb  # 导弹车武器(Kenney weapon-ballista)
-├── assets_raw/            # 原始下载素材(Kenney 全套 160+ 模型,可随意取用)
+├── assets/
+│   ├── models/            # 游戏用模型(glb / fbx)
+│   │   ├── tank/          # 侦察坦克 + PBR 贴图 + 署名文件
+│   │   ├── enemy_*.glb    # 敌人
+│   │   ├── tower_*.glb    # 防御塔
+│   │   └── prop_*.glb     # 战场道具
+│   ├── textures/          # 地面/道路 PBR 贴图(ambientCG)
+│   └── hdri/sky.hdr       # HDRI 天空(Poly Haven)
+├── assets_raw/            # 素材仓库(Godot 已忽略,不参与导入)
+├── tools/                 # 开发调试工具(截图/模型检查,不影响游戏运行)
 └── scripts/
     ├── game_state.gd      # 全局状态:资金/生命/波次(autoload 单例)
-    ├── main.gd            # 地图、UI、波次管理、建塔交互
+    ├── main.gd            # 地图、UI、波次管理、建塔交互、场景搭建
     ├── tower.gd           # 防御塔:索敌、转炮塔、开火
-    ├── enemy.gd           # 敌人:沿路径行进、血条、受伤
+    ├── enemy.gd           # 敌人:沿路径行进、血条、受伤、走路动画
     └── bullet.gd          # 炮弹/导弹:追踪、爆炸、范围伤害
 ```
 
 ## 模型机制说明
 
-- 代码会**优先加载 GLB 模型**,文件缺失时自动回退到程序化几何体,删掉模型文件游戏也能跑。
-- 模型加载后会**自动缩放、自动转向、自动贴地**(`fit_model()`),换任何模型都不用手动调大小。
-- 如果某个模型朝向不对(敌人倒着走 / 炮塔转 180° 开火),改这两个常量即可:
-  - `scripts/enemy.gd` 里的 `MODEL_YAW`(改成 180)
-  - `scripts/tower.gd` 里的 `MODEL_YAW`(改成 180)
-- 想换模型:把新的 `.glb` 放进 `assets/models/` 覆盖同名文件,或改 `MODEL_FILES` 里的路径。
+- 代码会**优先加载真实模型**,文件缺失时自动回退到程序化几何体,删掉模型文件游戏也能跑。
+- 模型加载后会**自动缩放、自动居中、自动贴地**(`fit_model()` / `place_model()`),换任何模型都不用手动调大小。
+- 如果某个模型朝向不对(敌人倒着走 / 炮塔转 180° 开火),改 `MODEL_YAW` 即可:
+  - `scripts/enemy.gd` 里的 `MODEL_YAW`(当前三种敌人都是 180)
+  - `scripts/tower.gd` 里的 `MODEL_YAW`(当前是 180)
+- 想换模型:把新的 `.glb/.fbx` 放进 `assets/models/`,改 `MODEL_FILES` 里的路径即可;
+  像坦克那样带外置 PBR 贴图的,把贴图目录加进 `PBR_DIRS`。
 
-## 更多素材来源
+## 开发调试工具(`tools/`)
 
-- `assets_raw/Models/GLB format/` 里有 Kenney Tower Defense Kit 全套(塔、UFO 敌人、地形块、树、水晶等 160+ 个模型),可以直接复制进 `assets/models/` 使用。
-- [Poly Pizza](https://poly.pizza) —— 免费低多边形模型(CC0),搜 tank / soldier / helicopter 等。
-- [Sketchfab](https://sketchfab.com/features/free-3d-models) —— 筛选免费 + CC 授权的模型,下载 glTF 格式。
+| 文件 | 用途 |
+|---|---|
+| `capture.tscn` | 运行后自动建塔、放敌人、多角度截图到 `tools/shot_*.png`,并输出场景对象清单 |
+| `showcase.tscn` | 逐个展示 `tools/showcase.gd` 里列出的模型(带红/蓝朝向标记),用于核对朝向与比例 |
+| `inspect_report.txt` / `tree_report.txt` / `big_report.txt` | 上面两个工具输出的诊断数据 |
+
+用法示例:
+
+```powershell
+& "$env:USERPROFILE\Godot\Godot_v4.7.2-stable_win64.exe" --path "c:\Users\Administrator\Documents\code\tafang" "res://tools/capture.tscn"
+```
 
 ## 可以继续加的功能(路线图)
 

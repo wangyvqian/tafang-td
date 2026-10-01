@@ -1,0 +1,22 @@
+MODEL 0 enemy_swat.glb
+  尺寸 x=3.16 y=3.50 z=0.68
+  RootNode [Node3D] pos=(0.0,0.0,0.0)
+    CharacterArmature [Node3D] pos=(0.0,0.0,0.0)
+      Skeleton3D [Skeleton3D] pos=(0.0,0.0,0.0)
+  AnimationPlayer [AnimationPlayer]
+  saved inspect_0.png
+  saved inspect_0_side.png
+MODEL 1 enemy_soldier.glb
+  尺寸 x=3.15 y=3.50 z=0.63
+  RootNode [Node3D] pos=(0.0,0.0,0.0)
+    CharacterArmature [Node3D] pos=(0.0,0.0,0.0)
+      Skeleton3D [Skeleton3D] pos=(0.0,0.0,0.0)
+  AnimationPlayer [AnimationPlayer]
+  saved inspect_1.png
+  saved inspect_1_side.png
+MODEL 2 enemy_jeep.glb
+  尺寸 x=1.56 y=1.82 z=3.50
+  RootNode [Node3D] pos=(0.0,0.0,0.0)
+    Light_Tank [MeshInstance3D] pos=(0.0,0.0,0.0)
+  saved inspect_2.png
+  saved inspect_2_side.png

@@ -59,8 +59,8 @@ func spawn_explosion() -> void:
 	mat.emission_enabled = true
 	mat.emission = Color(1, 0.4, 0.1)
 	mi.material_override = mat
-	mi.global_position = global_position
 	get_parent().add_child(mi)
+	mi.global_position = global_position
 	var tw := mi.create_tween()
 	tw.tween_property(mi, "scale", Vector3.ONE * (aoe * 2.0), 0.2)
 	tw.tween_callback(mi.queue_free)
