@@ -3,9 +3,13 @@ extends Node3D
 ## 红色球标记模型 -Z 方向(游戏里"正面"),蓝色球标记 +Z 方向
 
 const MODELS := [
-	"res://assets/models/enemy_swat.glb",
-	"res://assets/models/enemy_soldier.glb",
+	"res://assets/models/tower_mg.glb",
+	"res://assets/models/tower_cannon.glb",
+	"res://assets/models/tower_missile.glb",
+	"res://assets/models/enemy_infantry.glb",
 	"res://assets/models/enemy_jeep.glb",
+	"res://assets/models/tank/recon_tank.fbx",
+	"res://assets/models/enemy_swat.glb",
 ]
 const TARGET := 3.5
 const SPACING := 8.0
@@ -61,6 +65,8 @@ func dump_structure(n: Node, indent: String) -> void:
 		if c is Node3D:
 			var p: Vector3 = (c as Node3D).position
 			extra = " pos=(%.1f,%.1f,%.1f)" % [p.x, p.y, p.z]
+		if c is AnimationPlayer:
+			extra += " ANIMS=%s" % str((c as AnimationPlayer).get_animation_list())
 		report.append("%s%s [%s]%s" % [indent, c.name, c.get_class(), extra])
 		if indent.length() < 6:
 			dump_structure(c, indent + "  ")

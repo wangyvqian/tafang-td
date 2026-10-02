@@ -41,9 +41,11 @@ func explode() -> void:
 			if e and not e.is_dead and e.global_position.distance_to(global_position) <= aoe:
 				e.take_damage(damage)
 		spawn_explosion()
+		Sfx.play("explosion", global_position, -5.0)
 	else:
 		if is_instance_valid(target) and not target.is_dead:
 			target.take_damage(damage)
+		Sfx.play("hit", global_position, -9.0)
 	queue_free()
 
 

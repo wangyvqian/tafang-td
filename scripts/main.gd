@@ -130,6 +130,7 @@ func toggle_select(k: String) -> void:
 		selected_type = ""
 	else:
 		selected_type = k
+	Sfx.play("click", null, -14.0)
 	for key in tower_buttons:
 		tower_buttons[key].button_pressed = (key == selected_type)
 	update_ghost()
@@ -163,6 +164,7 @@ func try_place() -> void:
 	t.setup(selected_type, TOWER_TYPES[selected_type])
 	t.position = cell_to_world(ci)
 	occupied[ci] = t
+	Sfx.play("build", null, -7.0)
 
 
 func is_valid_build(ci: Vector2i) -> bool:
@@ -232,6 +234,7 @@ func start_wave() -> void:
 	spawn_timer = 0.3
 	wave_state = "spawning"
 	start_button.visible = false
+	Sfx.play("wave", null, -8.0)
 
 
 func spawn_enemy(type_key: String) -> void:
@@ -251,6 +254,7 @@ func _on_enemy_died(e: Enemy) -> void:
 func _on_enemy_reached_end(_e: Enemy) -> void:
 	alive_enemies -= 1
 	GameState.lives -= 1
+	Sfx.play("error", null, -6.0)
 	if GameState.lives <= 0:
 		end_game(false)
 
@@ -271,6 +275,7 @@ func end_game(victory: bool) -> void:
 	msg_label.text = ""
 	overlay_label.text = "胜利!你守住了防线!" if victory else "基地沦陷……"
 	overlay.visible = true
+	Sfx.play("wave" if victory else "error", null, -3.0)
 	if ghost:
 		ghost.queue_free()
 		ghost = null

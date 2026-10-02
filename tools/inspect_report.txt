@@ -1,22 +1,58 @@
-MODEL 0 enemy_swat.glb
+MODEL 0 tower_mg.glb
+  尺寸 x=3.11 y=2.36 z=3.50
+  RootNode [Node3D] pos=(0.0,0.0,0.0)
+    LaserSightGatelingGunTurret [MeshInstance3D] pos=(-0.0,2.1,-0.4)
+    AmmoBox1GatelingGun [MeshInstance3D] pos=(-0.0,0.7,-0.4)
+    Base1GatelingGunTurret [MeshInstance3D] pos=(-0.0,0.0,0.0)
+    Gun1GatelngGunTurret [MeshInstance3D] pos=(-0.0,1.3,0.2)
+    MiddleGatelingGunTurret [MeshInstance3D] pos=(-0.0,0.6,-0.0)
+    PipesGatelngGunTurret [MeshInstance3D] pos=(-0.0,1.3,1.0)
+  saved inspect_0.png
+  saved inspect_0_side.png
+MODEL 1 tower_cannon.glb
+  尺寸 x=1.94 y=2.55 z=3.50
+  RootNode [Node3D] pos=(0.0,0.0,0.0)
+    BaseCannonTurret1 [MeshInstance3D] pos=(0.0,-0.0,0.8)
+    GunCannonTurret1 [MeshInstance3D] pos=(0.0,1.6,2.6)
+    MiddleCannonTurret1 [MeshInstance3D] pos=(0.0,0.5,0.2)
+  saved inspect_1.png
+  saved inspect_1_side.png
+MODEL 2 tower_missile.glb
+  尺寸 x=3.50 y=2.76 z=2.88
+  RootNode [Node3D] pos=(0.0,0.0,0.0)
+    BaseMissileTurret1 [MeshInstance3D] pos=(0.1,-0.0,0.0)
+    MiddleMissileTurret1 [MeshInstance3D] pos=(0.1,0.5,0.0)
+    GunsMissileTurret1 [MeshInstance3D] pos=(0.1,1.9,0.1)
+    HeadMissileTurret1 [MeshInstance3D] pos=(0.1,1.4,0.5)
+  saved inspect_2.png
+  saved inspect_2_side.png
+MODEL 3 enemy_infantry.glb
+  尺寸 x=3.50 y=2.86 z=2.02
+  RootNode [Node3D] pos=(0.0,0.0,0.0)
+    CharacterArmature [Node3D] pos=(0.0,0.0,0.0)
+      Skeleton3D [Skeleton3D] pos=(0.0,0.0,0.0)
+  AnimationPlayer [AnimationPlayer] ANIMS=["CharacterArmature|Death", "CharacterArmature|Duck", "CharacterArmature|HitReact", "CharacterArmature|Idle", "CharacterArmature|Idle_Shoot", "CharacterArmature|Jump", "CharacterArmature|Jump_Idle", "CharacterArmature|Jump_Land", "CharacterArmature|No", "CharacterArmature|Punch", "CharacterArmature|Run", "CharacterArmature|Run_Gun", "CharacterArmature|Wave", "CharacterArmature|Yes"]
+  saved inspect_3.png
+  saved inspect_3_side.png
+MODEL 4 enemy_jeep.glb
+  尺寸 x=1.56 y=1.82 z=3.50
+  RootNode [Node3D] pos=(0.0,0.0,0.0)
+    Light_Tank [MeshInstance3D] pos=(0.0,0.0,0.0)
+  saved inspect_4.png
+  saved inspect_4_side.png
+MODEL 5 recon_tank.fbx
+  尺寸 x=1.47 y=2.18 z=3.50
+  Recon_Tank_Rig [Node3D] pos=(0.0,0.0,0.0)
+    Skeleton3D [Skeleton3D] pos=(0.0,0.0,0.0)
+      Recon_Tank [MeshInstance3D] pos=(0.0,0.0,0.0)
+  AnimationPlayer [AnimationPlayer] ANIMS=["Recon_Tank_Rig|Drive", "Recon_Tank_Rig|Forward", "Recon_Tank_Rig|Idle", "Recon_Tank_Rig|Shoot"]
+  saved inspect_5.png
+  saved inspect_5_side.png
+MODEL 6 enemy_swat.glb
   尺寸 x=3.16 y=3.50 z=0.68
   RootNode [Node3D] pos=(0.0,0.0,0.0)
     CharacterArmature [Node3D] pos=(0.0,0.0,0.0)
       Skeleton3D [Skeleton3D] pos=(0.0,0.0,0.0)
-  AnimationPlayer [AnimationPlayer]
-  saved inspect_0.png
-  saved inspect_0_side.png
-MODEL 1 enemy_soldier.glb
-  尺寸 x=3.15 y=3.50 z=0.63
-  RootNode [Node3D] pos=(0.0,0.0,0.0)
-    CharacterArmature [Node3D] pos=(0.0,0.0,0.0)
-      Skeleton3D [Skeleton3D] pos=(0.0,0.0,0.0)
-  AnimationPlayer [AnimationPlayer]
-  saved inspect_1.png
-  saved inspect_1_side.png
-MODEL 2 enemy_jeep.glb
-  尺寸 x=1.56 y=1.82 z=3.50
-  RootNode [Node3D] pos=(0.0,0.0,0.0)
-    Light_Tank [MeshInstance3D] pos=(0.0,0.0,0.0)
-  saved inspect_2.png
-  saved inspect_2_side.png
+  AnimationPlayer [AnimationPlayer] ANIMS=["CharacterArmature|Death", "CharacterArmature|Gun_Shoot", "CharacterArmature|HitRecieve", "CharacterArmature|HitRecieve_2", "CharacterArmature|Idle", "CharacterArmature|Idle_Gun", "CharacterArmature|Idle_Gun_Pointing", "CharacterArmature|Idle_Gun_Shoot", "CharacterArmature|Idle_Neutral", "CharacterArmature|Idle_Sword", "CharacterArmature|Interact", "CharacterArmature|Kick_Left", "CharacterArmature|Kick_Right", "CharacterArmature|Punch_Left", "CharacterArmature|Punch_Right", "CharacterArmature|Roll", "CharacterArmature|Run", "CharacterArmature|Run_Back", "CharacterArmature|Run_Left", "CharacterArmature|Run_Right", "CharacterArmature|Run_Shoot", "CharacterArmature|Sword_Slash", "CharacterArmature|Walk", "CharacterArmature|Wave"]
+  saved inspect_6.png
+  saved inspect_6_side.png

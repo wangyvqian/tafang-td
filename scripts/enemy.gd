@@ -18,6 +18,7 @@ var visual: Node3D
 var hp_bar_root: Node3D
 var bar_fill: MeshInstance3D
 var anim_time: float = 0.0
+var has_anim: bool = false
 
 ## 行走离地高度:贴合路面顶面(路基 0.14 + 车辙 0.015),避免车辆陷入路面
 const WALK_Y := 0.155
@@ -79,9 +80,9 @@ func _process(delta: float) -> void:
 		global_position += to / dist * step
 		if dist > 0.01:
 			look_at(global_position + to / dist, Vector3.UP)
-	# 行进动画:士兵颠簸摇摆,车辆轻微晃动
+	# 行进动画:有自带骨骼动画的模型不再程序化颠簸,其余用颠簸/晃动代替
 	anim_time += delta
-	if visual != null:
+	if visual != null and not has_anim:
 		if kind == "soldier":
 			var f := anim_time * 9.0
 			visual.position.y = absf(sin(f)) * 0.12
@@ -107,6 +108,10 @@ func take_damage(d: float) -> void:
 	update_bar()
 	if hp <= 0.0:
 		is_dead = true
+		if kind == "tank":
+			Sfx.play("explosion", global_position, -6.0)
+		else:
+			Sfx.play("hit", global_position, -10.0)
 		died.emit(self)
 		queue_free()
 
@@ -123,12 +128,12 @@ func update_bar() -> void:
 
 ## 每种敌人对应的模型文件(来源:Poly Pizza / OpenGameArt,CC0/CC-BY 授权)
 const MODEL_FILES := {
-	"soldier": "res://assets/models/enemy_swat.glb",
+	"soldier": "res://assets/models/enemy_infantry.glb",
 	"jeep": "res://assets/models/enemy_jeep.glb",
 	"tank": "res://assets/models/tank/recon_tank.fbx",
 }
 ## 模型最长边缩放到的目标尺寸(米)
-const MODEL_SIZE := {"soldier": 1.8, "jeep": 2.9, "tank": 3.8}
+const MODEL_SIZE := {"soldier": 1.9, "jeep": 2.9, "tank": 3.8}
 ## 若模型朝向不对(倒着走),把对应值改成 180
 const MODEL_YAW := {"soldier": 180.0, "jeep": 180.0, "tank": 180.0}
 ## 需要统一涂装的模型(覆盖其原贴图颜色,融入沙漠战场)
@@ -138,6 +143,11 @@ const MODEL_TINT := {
 ## 带外置 PBR 贴图的模型:模型路径 -> 贴图目录
 const PBR_DIRS := {
 	"res://assets/models/tank/recon_tank.fbx": "res://assets/models/tank/",
+}
+## 模型自带动画:按列表顺序取第一个匹配到的片段循环播放
+const ANIM_KEYS := {
+	"soldier": ["run_gun", "run", "walk", "idle"],
+	"tank": ["drive", "forward", "idle"],
 }
 
 
@@ -154,8 +164,42 @@ func build_visuals() -> void:
 			apply_pbr(model, PBR_DIRS[path])
 		elif MODEL_TINT.has(kind):
 			apply_tint(model, MODEL_TINT[kind])
+		setup_animation(model)
 		return
 	build_fallback_visuals()
+
+
+## 播放模型自带的行走/驱动动画(找到即循环播放,步频随单位速度调整)
+func setup_animation(model: Node3D) -> void:
+	var keys: Array = ANIM_KEYS.get(kind, [])
+	if keys.is_empty():
+		return
+	var player := find_anim_player(model)
+	if player == null:
+		return
+	var clip := ""
+	for key in keys:
+		for an in player.get_animation_list():
+			if String(an).to_lower().contains(String(key)):
+				clip = String(an)
+				break
+		if clip != "":
+			break
+	if clip == "":
+		return
+	player.play(clip)
+	player.speed_scale = clampf(speed * 0.33, 0.55, 2.0)
+	has_anim = true
+
+
+func find_anim_player(n: Node) -> AnimationPlayer:
+	if n is AnimationPlayer:
+		return n as AnimationPlayer
+	for c in n.get_children():
+		var found := find_anim_player(c)
+		if found != null:
+			return found
+	return null
 
 
 ## 把目录下的 BaseColor/Normal/Roughness/Metallic 贴图应用到模型所有网格

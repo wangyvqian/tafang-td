@@ -54,6 +54,8 @@ func fire(target: Enemy) -> void:
 	get_parent().add_child(b)
 	b.setup(muzzle.global_position, target, float(config.damage),
 			float(config.bullet_speed), float(config.aoe), config.color)
+	Sfx.play("shot_%s" % type_key, muzzle.global_position,
+			float(SHOT_VOLUME.get(type_key, -6.0)))
 
 
 # ---------- 幽灵(建造预览)模式 ----------
@@ -101,15 +103,17 @@ const MODEL_FILES := {
 	"missile": "res://assets/models/tower_missile.glb",
 }
 ## 模型最长边缩放到的目标尺寸(米)
-const MODEL_SIZE := {"mg": 1.9, "cannon": 2.9, "missile": 2.5}
-## 炮口朝向修正(该模型炮管指向 +Z,转 180° 后指向 -Z = 索敌方向)
+const MODEL_SIZE := {"mg": 2.5, "cannon": 3.0, "missile": 3.0}
+## 炮口朝向修正(这批模型炮管指向 +Z,转 180° 后指向 -Z = 索敌方向)
 const MODEL_YAW := {"mg": 180.0, "cannon": 180.0, "missile": 180.0}
-## 各塔涂装色(覆盖模型贴图,形成军械配色)
+## 各塔涂装色(覆盖模型贴图,形成统一军械配色)
 const MODEL_TINT := {
 	"mg": Color(0.25, 0.31, 0.22),
 	"cannon": Color(0.3, 0.3, 0.28),
 	"missile": Color(0.36, 0.33, 0.2),
 }
+## 开火音效音量(不同武器音量不同,机枪较密所以压低)
+const SHOT_VOLUME := {"mg": -10.0, "cannon": -5.0, "missile": -5.0}
 
 
 func build_visuals() -> void:

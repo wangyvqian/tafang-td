@@ -51,14 +51,17 @@
 
 | 素材 | 内容 | 来源 | 授权 |
 |---|---|---|---|
-| 侦察坦克 `tank/recon_tank.fbx` + PBR 贴图 | 敌人「坦克」 | [OpenGameArt - Recon Tank](https://opengameart.org/content/recon-tank-update)(作者 Mophs / MNDV.ecb) | CC-BY 4.0 |
-| 士兵 `enemy_swat.glb` | 敌人「士兵」 | [Poly Pizza - SWAT](https://poly.pizza/m/Btfn3G5Xv4)(Quaternius) | CC0 |
+| 侦察坦克 `tank/recon_tank.fbx` + PBR 贴图 | 敌人「坦克」(自带 Drive/Forward/Idle/Shoot 动画) | [OpenGameArt - Recon Tank](https://opengameart.org/content/recon-tank-update)(作者 Mophs / MNDV.ecb) | CC-BY 4.0 |
+| 步兵 `enemy_infantry.glb` | 敌人「士兵」(自带 Run_Gun/Run/Walk/Idle/Death 等动画) | [Poly Pizza - Character Soldier](https://poly.pizza/m/PpLF4rt4ah)(Quaternius) | CC0 |
 | 轻型坦克 `enemy_jeep.glb` | 敌人「吉普」 | [Poly Pizza - Light Tank](https://poly.pizza/m/S1jUTRmAjD)(Zsky) | CC0 |
-| 双管防空炮 `tower_*.glb` | 三种防御塔 | [Poly Pizza - Turret](https://poly.pizza/m/mXKbcMPLSS) | CC0 |
-| 沙袋/油桶/帐篷/松树/铁路网/补给箱/岗楼 | 战场装饰 | Poly Pizza(Quaternius 等) | CC0 |
+| 多管机枪塔 `tower_mg.glb` | 机枪塔 | [Poly Pizza - Gatling Gun Turret](https://poly.pizza/m/T8ofhRSenf) | CC0 |
+| 双管自动炮 `tower_cannon.glb` | 加农炮 | [Poly Pizza - Gun Cannon Turret](https://poly.pizza/m/rxgAVyYKh6) | CC0 |
+| 导弹发射箱 `tower_missile.glb` | 导弹车 | [Poly Pizza - Missile Turret](https://poly.pizza/m/RqnAj5N9fL) | CC0 |
+| 沙袋/油桶/帐篷/松树/铁丝网/补给箱/岗楼 | 战场装饰 | Poly Pizza(Quaternius 等) | CC0 |
 | 岩石/土堆/小树 | 地面细节 | [Kenney Tower Defense Kit](https://kenney.nl/assets/tower-defense-kit) | CC0 |
 | 沙漠地面/碎石路 PBR 贴图 | 地面与道路 | [ambientCG](https://ambientcg.com/)(Ground054 / Gravel022 / Ground080) | CC0 |
 | 天空 HDRI | 真实天空与光照 | [Poly Haven](https://polyhaven.com/)(kloofendal_48d_partly_cloudy_puresky) | CC0 |
+| 音效(射击/爆炸/命中/UI) | 开火、爆炸、建塔、波次提示 | [Kenney Impact Sounds](https://kenney.nl/assets/impact-sounds) / [Sci-Fi Sounds](https://kenney.nl/assets/sci-fi-sounds) / [Interface Sounds](https://kenney.nl/assets/interface-sounds) | CC0 |
 
 > 唯一需要署名的是 Recon Tank(CC-BY 4.0),署名信息在 `assets/models/tank/CREDITS.txt`。
 > 如果发布游戏,记得在说明中标注该模型作者。
@@ -72,20 +75,31 @@ tafang/
 ├── assets/
 │   ├── models/            # 游戏用模型(glb / fbx)
 │   │   ├── tank/          # 侦察坦克 + PBR 贴图 + 署名文件
-│   │   ├── enemy_*.glb    # 敌人
-│   │   ├── tower_*.glb    # 防御塔
+│   │   ├── enemy_*.glb    # 敌人(步兵/吉普/备用 SWAT)
+│   │   ├── tower_*.glb    # 防御塔(多管机枪/双管自动炮/导弹箱)
 │   │   └── prop_*.glb     # 战场道具
+│   ├── audio/             # 音效(射击/爆炸/命中/UI,来自 Kenney)
 │   ├── textures/          # 地面/道路 PBR 贴图(ambientCG)
 │   └── hdri/sky.hdr       # HDRI 天空(Poly Haven)
 ├── assets_raw/            # 素材仓库(Godot 已忽略,不参与导入)
 ├── tools/                 # 开发调试工具(截图/模型检查,不影响游戏运行)
 └── scripts/
     ├── game_state.gd      # 全局状态:资金/生命/波次(autoload 单例)
+    ├── audio.gd           # 音效管理:预加载/限流/3D 定位播放(autoload 单例 Sfx)
     ├── main.gd            # 地图、UI、波次管理、建塔交互、场景搭建
     ├── tower.gd           # 防御塔:索敌、转炮塔、开火
-    ├── enemy.gd           # 敌人:沿路径行进、血条、受伤、走路动画
+    ├── enemy.gd           # 敌人:沿路径行进、血条、受伤、车道、模型动画
     └── bullet.gd          # 炮弹/导弹:追踪、爆炸、范围伤害
 ```
+
+## 动画与音效机制
+
+- **模型动画**:`enemy.gd` 的 `ANIM_KEYS` 定义每种敌人优先匹配的动画关键字,加载模型后自动找到
+  `AnimationPlayer` 并循环播放(步兵 → `Run_Gun`,坦克 → `Drive`),播放速度随单位速度缩放。
+  有骨骼动画的单位会自动关闭程序化颠簸,避免「动画叠加抖动」。
+- **音效**:`scripts/audio.gd`(autoload `Sfx`)统一管理,`Sfx.play("shot_mg", 世界坐标)` 即可做 3D 定位播放;
+  内置同音效最短间隔(0.045s)与同时播放上限(26)防止爆音。要换音效只需替换 `assets/audio/` 下的同名文件,
+  或在 `SOUNDS` 字典里增删。
 
 ## 模型机制说明
 
